@@ -1,0 +1,4 @@
+.DS_Store
+*.backup.html
+index.pre-*.html
+fina-deploy.zip

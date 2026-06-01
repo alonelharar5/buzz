@@ -1,0 +1,63 @@
+{
+  "streaming": {
+    "ttl": "🎬 סטרימינג",
+    "services": [
+      { "id": "netflix",  "name": "Netflix",     "color": "#E50914", "logo": "N",  "plans": [["Standard", 55], ["Premium", 70], ["עם פרסומות", 20]] },
+      { "id": "disney",   "name": "Disney+",     "color": "#113CCF", "logo": "D+", "plans": [["Standard", 30]] },
+      { "id": "appletv",  "name": "Apple TV+",   "color": "#111111", "logo": "TV", "plans": [["חודשי", 35]] },
+      { "id": "prime",    "name": "Prime Video", "color": "#00A8E1", "logo": "pv", "plans": [["חודשי", 20]] }
+    ]
+  },
+  "music": {
+    "ttl": "🎵 מוזיקה",
+    "services": [
+      { "id": "spotify",    "name": "Spotify",     "color": "#1DB954", "logo": "S",  "plans": [["Individual", 22], ["Duo", 30], ["Family", 38], ["Student", 11]] },
+      { "id": "applemusic", "name": "Apple Music", "color": "#FA243C", "logo": "♫",  "plans": [["Individual", 22], ["Family", 32]] },
+      { "id": "ytmusic",    "name": "YT Music",    "color": "#FF0000", "logo": "YM", "plans": [["Individual", 20]] }
+    ]
+  },
+  "ai": {
+    "ttl": "🤖 AI",
+    "services": [
+      { "id": "chatgpt", "name": "ChatGPT Plus", "color": "#10A37F", "logo": "AI", "plans": [["Plus", 75]] },
+      { "id": "claude",  "name": "Claude Pro",   "color": "#D97757", "logo": "C",  "plans": [["Pro", 75]] },
+      { "id": "gemini",  "name": "Gemini",       "color": "#1A73E8", "logo": "G",  "plans": [["Advanced", 75]] }
+    ]
+  },
+  "gaming": {
+    "ttl": "🎮 גיימינג",
+    "services": [
+      { "id": "xbox",   "name": "Game Pass", "color": "#107C10", "logo": "X",  "plans": [["Ultimate", 60], ["Core", 25]] },
+      { "id": "psplus", "name": "PS Plus",   "color": "#003791", "logo": "PS", "plans": [["Essential", 29], ["Extra", 45]] }
+    ]
+  },
+  "cloud": {
+    "ttl": "☁️ אחסון ענן",
+    "services": [
+      { "id": "icloud",    "name": "iCloud+",    "color": "#3693F3", "logo": "☁",  "plans": [["50GB", 4], ["200GB", 12], ["2TB", 40]] },
+      { "id": "googleone", "name": "Google One", "color": "#4285F4", "logo": "G1", "plans": [["100GB", 9], ["200GB", 13]] },
+      { "id": "dropbox",   "name": "Dropbox",    "color": "#0061FF", "logo": "Db", "plans": [["Plus", 40]] }
+    ]
+  },
+  "fitness": {
+    "ttl": "💪 כושר",
+    "services": [
+      { "id": "applefitness", "name": "Fitness+", "color": "#84CC16", "logo": "F+", "plans": [["חודשי", 35]] },
+      { "id": "gymapp",       "name": "אפ כושר",  "color": "#FB7185", "logo": "💪", "plans": [["חודשי", 40]] }
+    ]
+  },
+  "learning": {
+    "ttl": "📚 לימודים",
+    "services": [
+      { "id": "duolingo", "name": "Duolingo", "color": "#58CC02", "logo": "D",  "plans": [["Super", 30]] },
+      { "id": "coursera", "name": "Coursera", "color": "#0056D2", "logo": "Cr", "plans": [["Plus", 150]] }
+    ]
+  },
+  "news": {
+    "ttl": "📰 תוכן וחדשות",
+    "services": [
+      { "id": "ytpremium", "name": "YouTube Premium", "color": "#FF0000", "logo": "YT", "plans": [["Premium", 27]] },
+      { "id": "news",      "name": "מנוי חדשות",      "color": "#1F2937", "logo": "📰", "plans": [["דיגיטלי", 40]] }
+    ]
+  }
+}

@@ -526,11 +526,11 @@ header{padding:max(16px,env(safe-area-inset-top)) 18px 16px;display:flex;align-i
 .subs-fab{width:100%;background:linear-gradient(135deg,#A78BFA,#F472B6);color:#fff;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 8px 22px rgba(167,139,250,.35);margin-top:6px}
 .subs-fab:active{transform:scale(.98)}
 .subs-goal-link{background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(16,185,129,.08));border:1.5px solid rgba(16,185,129,.28);border-radius:16px;padding:15px;margin-bottom:12px;text-align:right}
-#sub-picker{position:fixed;inset:0;z-index:215;display:none;align-items:flex-end;justify-content:center;background:rgba(20,15,40,.5);backdrop-filter:blur(5px)}
-#sub-picker.show{display:flex;animation:fadeIn .2s}
-#sub-picker-inner,#sub-detail-inner,#sub-history-inner{background:var(--bg,#F4F6FF);border-radius:26px 26px 0 0;width:100%;max-width:430px;max-height:90vh;overflow-y:auto;padding:10px 18px 24px;animation:buzzPanelIn .35s cubic-bezier(.16,1,.3,1)}
-#sub-detail,#sub-history{position:fixed;inset:0;z-index:216;display:none;align-items:flex-end;justify-content:center;background:rgba(20,15,40,.5);backdrop-filter:blur(5px)}
-#sub-detail.show,#sub-history.show{display:flex;animation:fadeIn .2s}
+#sub-wizard,#sub-screen{position:fixed;inset:0;z-index:232;display:none;flex-direction:column;max-width:430px;margin:0 auto;background:radial-gradient(ellipse at top,#F1ECFF 0%,#F4F6FF 55%);overflow:hidden;padding-top:env(safe-area-inset-top)}
+#sub-wizard.show,#sub-screen.show{display:flex;animation:gwIn .35s cubic-bezier(.16,1,.3,1)}
+#sub-history{position:fixed;inset:0;z-index:233;display:none;align-items:flex-end;justify-content:center;background:rgba(20,15,40,.5);backdrop-filter:blur(5px)}
+#sub-history.show{display:flex;animation:fadeIn .2s}
+#sub-history-inner{background:var(--bg,#F4F6FF);border-radius:26px 26px 0 0;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;padding:10px 18px 24px;animation:buzzPanelIn .35s cubic-bezier(.16,1,.3,1)}
 
 </style>
 </head>
@@ -1303,7 +1303,7 @@ header{padding:max(16px,env(safe-area-inset-top)) 18px 16px;display:flex;align-i
     <!-- ════ SUBSCRIPTIONS ════ -->
     <div id="s-subs" class="screen">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <button class="icon-btn" style="background:linear-gradient(135deg,#A78BFA,#F472B6);box-shadow:0 6px 18px rgba(167,139,250,.4)" onclick="openSubPicker()">
+        <button class="icon-btn" style="background:linear-gradient(135deg,#A78BFA,#F472B6);box-shadow:0 6px 18px rgba(167,139,250,.4)" onclick="openSubWizard()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
         <h2 style="font-size:22px;font-weight:900;letter-spacing:-.3px">המנויים שלי</h2>
@@ -1312,23 +1312,29 @@ header{padding:max(16px,env(safe-area-inset-top)) 18px 16px;display:flex;align-i
       <div style="height:20px"></div>
     </div>
 
-    <!-- ════ SUB PICKER MODAL ════ -->
-    <div id="sub-picker" onclick="if(event.target===this)closeSubPicker()">
-      <div id="sub-picker-inner">
-        <div class="gm-grab" style="width:40px;height:5px;border-radius:99px;background:var(--border);margin:8px auto 12px"></div>
-        <p style="font-size:19px;font-weight:900;text-align:center;margin-bottom:2px">אילו מנויים יש לך?</p>
-        <p style="font-size:13px;color:var(--t3);text-align:center;margin-bottom:8px">סמן הכל — נחשב לך כמה זה באמת עולה</p>
-        <div id="sub-picker-body"></div>
-        <button class="subs-fab" onclick="closeSubPicker()" style="position:sticky;bottom:0">סיימתי ✓</button>
+    <!-- ════ SUB WIZARD (full-screen, Dreams style) ════ -->
+    <div id="sub-wizard">
+      <div class="gw-top">
+        <button class="gw-x" onclick="closeSubWiz()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <div class="gw-prog"><div class="gw-prog-fill" id="sw-prog"></div></div>
+        <button class="gw-back" id="sw-back" onclick="swBack()" style="visibility:hidden"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
       </div>
+      <div class="gw-fly-zone">
+        <div class="gw-fly" id="sw-fly"></div>
+        <div class="gw-bubble" id="sw-bubble"><p id="sw-bubble-txt">בוא נכיר את המנויים שלך 🪙</p></div>
+      </div>
+      <div class="gw-body" id="sw-body"></div>
+      <div class="gw-foot"><button class="gw-next" id="sw-next" onclick="swNext()" disabled>המשך</button></div>
     </div>
 
-    <!-- ════ SUB DETAIL CARD ════ -->
-    <div id="sub-detail" onclick="if(event.target===this)closeSubDetail()">
-      <div id="sub-detail-inner">
-        <div class="gm-grab" style="width:40px;height:5px;border-radius:99px;background:var(--border);margin:8px auto 14px"></div>
-        <div id="sub-detail-body"></div>
+    <!-- ════ SUB SCREEN (full-screen per subscription) ════ -->
+    <div id="sub-screen">
+      <div class="gw-top">
+        <button class="gw-x" onclick="closeSubScreen()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+        <div style="flex:1;text-align:center;font-size:14px;font-weight:800;color:var(--t1)">מנוי</div>
+        <div style="display:flex;gap:8px"><button class="gw-back" onclick="subScreenNav(-1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><button class="gw-back" onclick="subScreenNav(1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button></div>
       </div>
+      <div class="gw-body" id="sub-screen-body" style="padding-top:6px"></div>
     </div>
 
     <!-- ════ SUB HISTORY ════ -->
@@ -3651,8 +3657,7 @@ function deleteGoalEdit(){
 }
 
 /* ═══════════════════════ SUBSCRIPTIONS ═══════════════════════ */
-/* Catalog = local fallback; overridden at runtime from ./catalog.json so prices
-   can update server-side without shipping a new app version. */
+/* Catalog = local fallback; overridden at runtime from ./catalog.json. */
 let SUB_CATALOG = {
   streaming:{ttl:'🎬 סטרימינג',services:[
     {id:'netflix',name:'Netflix',color:'#E50914',logo:'N',plans:[['Basic',35],['Standard',55],['Premium',70],['עם פרסומות',20]]},
@@ -3707,208 +3712,167 @@ let SUB_CATALOG = {
     {id:'golan',name:'גולן',color:'#F36F21',logo:'גו',plans:[['סלולר',30]]},
   ]},
 };
-const SUB_STATUS = {
-  active:{lbl:'פעיל',col:'#10B981',bg:'rgba(16,185,129,.14)'},
-  trial:{lbl:'ניסיון חינם',col:'#7C3AED',bg:'rgba(124,58,237,.14)'},
-  renewing:{lbl:'עומד להתחדש',col:'#F59E0B',bg:'rgba(245,158,11,.16)'},
-  paused:{lbl:'מוקפא',col:'#0EA5E9',bg:'rgba(14,165,233,.14)'},
-  cancelled:{lbl:'בארכיון',col:'#94A3B8',bg:'rgba(148,163,184,.18)'},
-};
-const PAY_METHODS = {card:'💳 כרטיס אשראי',applepay:' Apple Pay',googlepay:'G Google Pay',paypal:'🅿 PayPal',bit:'⚡ bit'};
-let subs = [];
-try { const s=localStorage.getItem('fos-subs'); if(s) subs=JSON.parse(s); } catch(e){}
+const SUB_STATUS={active:{lbl:'פעיל',col:'#10B981',bg:'rgba(16,185,129,.14)'},trial:{lbl:'ניסיון חינם',col:'#7C3AED',bg:'rgba(124,58,237,.14)'},renewing:{lbl:'עומד להתחדש',col:'#F59E0B',bg:'rgba(245,158,11,.16)'},paused:{lbl:'מוקפא',col:'#0EA5E9',bg:'rgba(14,165,233,.14)'},cancelled:{lbl:'לא פעיל',col:'#94A3B8',bg:'rgba(148,163,184,.18)'}};
+const PAY_METHODS={card:'💳 אשראי',applepay:' Apple Pay',googlepay:'G Google Pay',bit:'⚡ bit',paypal:'🅿 PayPal'};
+let subs=[]; try{ const s=localStorage.getItem('fos-subs'); if(s) subs=JSON.parse(s); }catch(e){}
 function saveSubsLS(){ try{ localStorage.setItem('fos-subs', JSON.stringify(subs)); }catch(e){} }
-(function loadCatalog(){
-  fetch('./catalog.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
-    if(j && typeof j==='object'){ SUB_CATALOG=j; if(cur==='subs') renderSubs(); }
-  }).catch(()=>{});
-})();
+(function loadCatalog(){ fetch('./catalog.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{ if(j&&typeof j==='object'){ SUB_CATALOG=j; if(cur==='subs') renderSubs(); } }).catch(()=>{}); })();
 function subSvc(cat,id){ return (SUB_CATALOG[cat]&&SUB_CATALOG[cat].services||[]).find(s=>s.id===id); }
-function subLogoHtml(svc,size){ const sz=size||42; return '<div class="sub-logo" style="width:'+sz+'px;height:'+sz+'px;background:'+svc.color+'">'+svc.logo+'</div>'; }
-function subHash(str){ let h=0; for(let i=0;i<str.length;i++){ h=((h<<5)-h+str.charCodeAt(i))|0; } return Math.abs(h); }
-function newSub(cat,id){
-  const svc=subSvc(cat,id); const p=svc.plans[0]; const seed=subHash(id);
-  const monthsAgo=2+(seed%13); const d=new Date(); d.setMonth(d.getMonth()-monthsAgo);
-  const STAT=['active','active','active','active','renewing','trial'];
-  return {uid:'s'+Date.now()+Math.floor(Math.random()*1000), id:id, cat:cat, plan:p[0], price:p[1],
-    status:STAT[seed%STAT.length], billingDay:1+(seed%27), payment:'card', shared:false, users:1,
-    startMonth:d.toISOString().slice(0,7), usage:5+(seed%94), priceChanged:(seed%5===0)};
-}
+function subLogoHtml(svc,size){ const sz=size||42; return '<div class="sub-logo" style="width:'+sz+'px;height:'+sz+'px;background:'+svc.color+';font-size:'+Math.round(sz*0.4)+'px">'+svc.logo+'</div>'; }
+function subHash(str){ let h=0; for(let i=0;i<str.length;i++) h=((h<<5)-h+str.charCodeAt(i))|0; return Math.abs(h); }
+function subMonthly(s){ return s.freq==='yearly' ? Math.round((+s.price||0)/12) : (+s.price||0); }
 function subChargeable(s){ return s.status==='active'||s.status==='renewing'; }
 function subsActive(){ return subs.filter(s=>s.status!=='cancelled'); }
-function subsTotalMonthly(){ return subs.filter(subChargeable).reduce((a,s)=>a+(+s.price||0),0); }
-function nextBillingDays(s){ const t=new Date(),d=t.getDate(); let diff=s.billingDay-d; if(diff<0) diff+=30; return diff; }
-function fmtMonth(ym){ const [y,m]=ym.split('-'); return m+'/'+y.slice(2); }
-
-function subComparison(yr){
-  if(yr>=4500) return '✈️ בסכום הזה אפשר טיסה + מלון לשבוע באירופה';
-  if(yr>=2000) return '✈️ בסכום הזה אפשר סופ״ש זוגי באירופה';
-  if(yr>=1000) return '🎧 בסכום הזה אפשר זוג AirPods Pro';
-  if(yr>=500)  return '🍽️ בסכום הזה אפשר כמה ארוחות שף';
-  return '☕ עדיין מצטבר — כל מנוי נספר';
-}
-function subDuplicates(){
-  const out=[],byCat={}; subsActive().filter(subChargeable).forEach(s=>{(byCat[s.cat]=byCat[s.cat]||[]).push(s);});
-  const names={streaming:'שירותי צפייה',music:'שירותי מוזיקה',ai:'כלי AI',gaming:'שירותי גיימינג',cloud:'שירותי אחסון'};
-  Object.keys(byCat).forEach(c=>{ if(names[c]&&byCat[c].length>=2) out.push({cat:c,count:byCat[c].length,label:names[c],items:byCat[c]}); });
-  return out;
-}
-function subScore(){
-  let sc=100; const dups=subDuplicates(); dups.forEach(d=>sc-=10+(d.count-2)*6);
-  const ratio=subsTotalMonthly()/incomeMonthly();
-  if(ratio>0.08) sc-=22; else if(ratio>0.05) sc-=12; else if(ratio>0.03) sc-=5;
-  const low=subs.filter(s=>subChargeable(s)&&s.usage<20).length; sc-=low*6;
-  sc=Math.max(8,Math.min(99,Math.round(sc)));
-  let col,emoji,msg;
-  if(sc>=80){col='#10B981';emoji='🟢';msg='מצוין — אתה בשליטה';}
-  else if(sc>=55){col='#F59E0B';emoji='🟡';msg='סביר — יש מה לקצץ';}
-  else{col='#EF4444';emoji='🔴';msg='אתה מממן חצי מהאינטרנט';}
-  return {sc,col,emoji,msg,dups};
-}
+function subsTotalMonthly(){ return subs.filter(subChargeable).reduce((a,s)=>a+subMonthly(s),0); }
+function nextBillingDays(s){ const t=new Date(),d=t.getDate(); let diff=(s.billingDay||1)-d; if(diff<0) diff+=30; return diff; }
+function fmtMonth(ym){ if(!ym)return''; const [y,m]=ym.split('-'); return m+'/'+y.slice(2); }
 function statusBadge(s){ const m=SUB_STATUS[s.status]||SUB_STATUS.active; return '<span style="font-size:10px;font-weight:800;border-radius:99px;padding:2px 8px;color:'+m.col+';background:'+m.bg+'">'+m.lbl+'</span>'; }
+function usageCol(u){ return u<20?'#EF4444':u<50?'#F59E0B':'#10B981'; }
+function newSubBase(cat,id){ const svc=subSvc(cat,id); const p=svc.plans[0]; const seed=subHash(id); const monthsAgo=2+(seed%13); const d=new Date(); d.setMonth(d.getMonth()-monthsAgo);
+  return {uid:'s'+Date.now()+Math.floor(Math.random()*9999), id:id, cat:cat, plan:p[0], price:p[1], freq:'monthly', status:'active', billingDay:1+(seed%27), payment:'card', shared:false, users:1, notes:'', startMonth:d.toISOString().slice(0,7), usage:5+(seed%94), priceChanged:(seed%5===0)}; }
+function billingHistory(s){ const out=[]; if(!s.startMonth) return out; const [y,m]=s.startMonth.split('-').map(Number); let d=new Date(y,m-1,1); const now=new Date(); while(d<=now&&out.length<8){ out.push({m:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),amt:subMonthly(s)}); d.setMonth(d.getMonth()+1);} return out.reverse(); }
+function subDuplicates(){ const out=[],byCat={}; subs.filter(subChargeable).forEach(s=>{(byCat[s.cat]=byCat[s.cat]||[]).push(s);}); const names={streaming:'שירותי צפייה',music:'שירותי מוזיקה',ai:'כלי AI',gaming:'שירותי גיימינג',cloud:'שירותי אחסון'}; Object.keys(byCat).forEach(c=>{ if(names[c]&&byCat[c].length>=2) out.push({cat:c,count:byCat[c].length,label:names[c],items:byCat[c]}); }); return out; }
+function subScore(){ let sc=100; const dups=subDuplicates(); dups.forEach(d=>sc-=10+(d.count-2)*6); const ratio=subsTotalMonthly()/incomeMonthly(); if(ratio>0.08)sc-=22;else if(ratio>0.05)sc-=12;else if(ratio>0.03)sc-=5; const low=subs.filter(s=>subChargeable(s)&&s.usage<20).length; sc-=low*6; sc=Math.max(8,Math.min(99,Math.round(sc))); let col,emoji,msg; if(sc>=80){col='#10B981';emoji='🟢';msg='מצוין — אתה בשליטה';}else if(sc>=55){col='#F59E0B';emoji='🟡';msg='סביר — יש מה לקצץ';}else{col='#EF4444';emoji='🔴';msg='אתה מממן חצי מהאינטרנט';} return {sc,col,emoji,msg,dups}; }
+function subComparison(yr){ if(yr>=4500)return'✈️ בסכום הזה אפשר טיסה + מלון לשבוע באירופה'; if(yr>=2000)return'✈️ בסכום הזה אפשר סופ״ש זוגי באירופה'; if(yr>=1000)return'🎧 בסכום הזה אפשר זוג AirPods Pro'; if(yr>=500)return'🍽️ בסכום הזה אפשר כמה ארוחות שף'; return'☕ עדיין מצטבר — כל מנוי נספר'; }
 
+/* ─── MY SUBSCRIPTIONS hub ─── */
 function renderSubs(){
   const c=document.getElementById('subs-content'); if(!c) return;
   if(!subs.length){
     c.innerHTML='<div class="goals-empty" style="min-height:50vh">'+FLY_SVG+
-      '<div class="goals-fly-bubble"><p>יש סיכוי שחלק לא קטן מהכסף שלך יוצא על מנויים שאתה כבר לא ממש משתמש בהם 🪙<br>בוא נכיר אותם.</p></div>'+
-      '<button class="gc-add-big" onclick="openSubPicker()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>בחר את המנויים שלי</button></div>';
+      '<div class="goals-fly-bubble"><p>יש סיכוי שחלק לא קטן מהכסף שלך יוצא על מנויים שאתה כבר לא ממש משתמש בהם 🪙<br>בוא נכיר אותם, אחד אחד.</p></div>'+
+      '<button class="gc-add-big" onclick="openSubWizard()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>בוא נתחיל</button></div>';
     return;
   }
-  const mo=subsTotalMonthly(), yr=mo*12, sObj=subScore();
+  const mo=subsTotalMonthly(),yr=mo*12,sObj=subScore();
+  const active=subs.filter(subChargeable);
+  const most=[...active].sort((a,b)=>subMonthly(b)-subMonthly(a))[0];
+  const least=[...active].sort((a,b)=>a.usage-b.usage)[0];
   let html='';
-  html+='<div class="subs-hero"><p style="font-size:12px;font-weight:700;opacity:.85;margin-bottom:8px">אתה משלם על מנויים</p>'+
-    '<div class="subs-hero-big">'+fmt(mo)+' ₪</div><div class="subs-hero-yr">לחודש · <strong>'+fmt(yr)+' ₪ בשנה</strong></div>'+
-    '<div class="subs-hero-cmp">'+subComparison(yr)+'</div></div>';
-  html+='<div class="card" style="padding:16px;margin-bottom:12px"><div class="subscore">'+
-    '<div class="subscore-ring" style="background:conic-gradient('+sObj.col+' '+(sObj.sc*3.6)+'deg, var(--s2) 0)"><div style="position:absolute;width:60px;height:60px;border-radius:50%;background:var(--w);display:flex;align-items:center;justify-content:center"><span>'+sObj.sc+'</span></div></div>'+
-    '<div style="flex:1;text-align:right"><p style="font-size:12px;font-weight:700;color:var(--t3)">Subscription Score</p><p style="font-size:17px;font-weight:900;margin:2px 0">'+sObj.emoji+' '+sObj.msg+'</p><p style="font-size:12px;color:var(--t3)">'+subsActive().length+' מנויים פעילים</p></div></div></div>';
+  // summary hero
+  html+='<div class="subs-hero"><p style="font-size:12px;font-weight:700;opacity:.85;margin-bottom:8px">סך המנויים שלך</p><div class="subs-hero-big">'+fmt(mo)+' ₪</div><div class="subs-hero-yr">לחודש · <strong>'+fmt(yr)+' ₪ בשנה</strong> · '+subsActive().length+' פעילים</div><div class="subs-hero-cmp">'+subComparison(yr)+'</div></div>';
+  // score
+  html+='<div class="card" style="padding:16px;margin-bottom:12px"><div class="subscore"><div class="subscore-ring" style="background:conic-gradient('+sObj.col+' '+(sObj.sc*3.6)+'deg, var(--s2) 0)"><div style="position:absolute;width:60px;height:60px;border-radius:50%;background:var(--w);display:flex;align-items:center;justify-content:center"><span>'+sObj.sc+'</span></div></div><div style="flex:1;text-align:right"><p style="font-size:12px;font-weight:700;color:var(--t3)">Subscription Score</p><p style="font-size:17px;font-weight:900;margin:2px 0">'+sObj.emoji+' '+sObj.msg+'</p>'+(most?'<p style="font-size:11px;color:var(--t3)">היקר ביותר: '+(subSvc(most.cat,most.id)||{}).name+' · '+fmt(subMonthly(most))+' ₪</p>':'')+'</div></div></div>';
+  // AI summary insight
+  const low=subs.filter(s=>subChargeable(s)&&s.usage<20);
+  if(low.length){ const save=low.reduce((a,s)=>a+subMonthly(s),0)*12;
+    html+='<div class="subs-alert" style="background:rgba(167,139,250,.1);border:1.5px solid rgba(167,139,250,.28)"><div class="sa-ic" style="background:rgba(167,139,250,.18)">🤖</div><div style="flex:1"><p style="font-size:14px;font-weight:800;color:var(--purple)">תובנת AI</p><p style="font-size:12.5px;color:var(--t2);line-height:1.55;margin-top:2px">יש לך <strong>'+subsActive().length+' מנויים</strong> ב-<strong>'+fmt(mo)+' ₪/ח׳</strong>. <strong>'+low.length+'</strong> כמעט לא בשימוש — ביטולם יחסוך <strong>'+fmt(save)+' ₪ בשנה</strong>.</p></div></div>'; }
   // renewal soon
   const soon=subs.filter(s=>subChargeable(s)&&nextBillingDays(s)<=5).sort((a,b)=>nextBillingDays(a)-nextBillingDays(b))[0];
-  if(soon){ const svc=subSvc(soon.cat,soon.id)||{name:soon.id}; const dys=nextBillingDays(soon);
-    html+='<div class="subs-alert" style="background:rgba(245,158,11,.12);border:1.5px solid rgba(245,158,11,.28)"><div class="sa-ic" style="background:rgba(245,158,11,.2)">⏰</div><div style="flex:1"><p style="font-size:14px;font-weight:800;color:#B45309">'+svc.name+' מתחדש בעוד '+(dys===0?'היום':dys+' ימים')+'</p><p style="font-size:12.5px;color:var(--t2);margin-top:2px">'+fmt(soon.price)+' ₪ ייגבו ב-'+soon.billingDay+' לחודש</p></div></div>';
-  }
-  // price changed
-  const pc=subs.filter(s=>subChargeable(s)&&s.priceChanged)[0];
-  if(pc){ const svc=subSvc(pc.cat,pc.id)||{name:pc.id};
-    html+='<div class="subs-alert" style="background:rgba(236,72,153,.1);border:1.5px solid rgba(236,72,153,.25)"><div class="sa-ic" style="background:rgba(236,72,153,.18)">📈</div><div style="flex:1"><p style="font-size:14px;font-weight:800;color:#BE185D">המחיר של '+svc.name+' עלה מאז שנרשמת</p><p style="font-size:12.5px;color:var(--t2);margin-top:2px">שווה לבדוק אם עדיין משתלם לך</p></div></div>';
-  }
-  // low usage
-  const low=subs.filter(s=>subChargeable(s)&&s.usage<20).length;
-  if(low){ html+='<div class="subs-alert" style="background:rgba(148,163,184,.12);border:1.5px solid rgba(148,163,184,.28)"><div class="sa-ic" style="background:rgba(148,163,184,.2)">💤</div><div style="flex:1"><p style="font-size:14px;font-weight:800;color:var(--t2)">'+low+' מנויים בשימוש נמוך במיוחד</p><p style="font-size:12.5px;color:var(--t2);margin-top:2px">אולי הגיע הזמן להקפיא או לבטל</p></div></div>'; }
-  // duplicates
-  sObj.dups.forEach(d=>{ const cheapest=[...d.items].sort((a,b)=>a.price-b.price); const save=cheapest.slice(0,d.count-1).reduce((a,s)=>a+s.price,0);
-    html+='<div class="subs-alert" style="background:rgba(244,114,182,.1);border:1.5px solid rgba(244,114,182,.25)"><div class="sa-ic" style="background:rgba(244,114,182,.18)">🚨</div><div style="flex:1"><p style="font-size:14px;font-weight:800;color:#BE185D">'+d.count+' '+d.label+' במקביל</p><p style="font-size:12.5px;color:var(--t2);line-height:1.5;margin-top:2px">רוב האנשים משתמשים קבוע רק באחד. ביטול המיותרים יחסוך <strong>'+fmt(save*12)+' ₪ בשנה</strong>.</p></div></div>';
-  });
-  // goal connection
-  if(goals && goals.length){
-    const g=[...goals].sort((a,b)=>(a.saved/a.target)-(b.saved/b.target))[0];
-    const cancel=subs.filter(subChargeable).sort((a,b)=>a.price-b.price).slice(0,2);
-    if(cancel.length){ const saveYr=cancel.reduce((a,s)=>a+s.price,0)*12; const pct=Math.max(1,Math.round(saveYr/g.target*100));
-      const names=cancel.map(s=>(subSvc(s.cat,s.id)||{}).name||'').filter(Boolean).join(' ו-');
-      html+='<div class="subs-goal-link"><p style="font-size:12px;font-weight:800;color:#059669;margin-bottom:4px">🎯 חיבור ליעד שלך</p><p style="font-size:13.5px;line-height:1.6;color:var(--t1)">ביטול <strong>'+names+'</strong> יחסוך <strong>'+fmt(saveYr)+' ₪ בשנה</strong> — היעד "'+g.name+'" יתקרב ב-<strong>'+pct+'%</strong>.</p></div>';
-    }
-  }
-  html+='<div class="card-dark" style="padding:16px;margin-bottom:14px"><p style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:6px;text-align:right">🪙 כמה עולה להיות אתה</p><p style="font-size:13.5px;line-height:1.7;text-align:right">עוד לפני שקנית משהו החודש, כבר התחייבת ל-<strong style="color:#F472B6">'+fmt(mo)+' ₪</strong> על מנויים. זה <strong style="color:#34D399">'+fmt(Math.round(mo/30))+' ₪ ביום</strong>.</p></div>';
-  // active list
+  if(soon){ const svc=subSvc(soon.cat,soon.id)||{name:soon.id}; const dys=nextBillingDays(soon); html+='<div class="subs-alert" style="background:rgba(245,158,11,.12);border:1.5px solid rgba(245,158,11,.28)"><div class="sa-ic" style="background:rgba(245,158,11,.2)">⏰</div><div style="flex:1"><p style="font-size:14px;font-weight:800;color:#B45309">'+svc.name+' מתחדש בעוד '+(dys===0?'היום':dys+' ימים')+'</p><p style="font-size:12.5px;color:var(--t2);margin-top:2px">'+fmt(subMonthly(soon))+' ₪ ייגבו ב-'+soon.billingDay+' לחודש</p></div></div>'; }
+  // goal link
+  if(goals&&goals.length){ const g=[...goals].sort((a,b)=>(a.saved/a.target)-(b.saved/b.target))[0]; const cancel=active.slice().sort((a,b)=>subMonthly(a)-subMonthly(b)).slice(0,2); if(cancel.length){ const saveYr=cancel.reduce((a,s)=>a+subMonthly(s),0)*12; const pct=Math.max(1,Math.round(saveYr/g.target*100)); const names=cancel.map(s=>(subSvc(s.cat,s.id)||{}).name||'').filter(Boolean).join(' ו-'); html+='<div class="subs-goal-link"><p style="font-size:12px;font-weight:800;color:#059669;margin-bottom:4px">🎯 חיבור ליעד שלך</p><p style="font-size:13.5px;line-height:1.6;color:var(--t1)">ביטול <strong>'+names+'</strong> יחסוך <strong>'+fmt(saveYr)+' ₪ בשנה</strong> — היעד "'+g.name+'" יתקרב ב-<strong>'+pct+'%</strong>.</p></div>'; } }
+  // list
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><button onclick="openSubHistory()" style="background:none;border:none;color:var(--purple);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer">היסטוריה ←</button><p class="lbl" style="margin:0">המנויים שלי</p></div>';
   subsActive().forEach(s=>{ const svc=subSvc(s.cat,s.id)||{name:s.id,color:'#999',logo:'?'};
-    html+='<div class="sub-row" style="cursor:pointer" onclick="openSubDetail(\''+s.uid+'\')">'+subLogoHtml(svc,38)+
-      '<div style="flex:1;text-align:right"><div style="display:flex;justify-content:space-between;flex-direction:row-reverse;align-items:center"><p style="font-size:14px;font-weight:700">'+svc.name+'</p>'+statusBadge(s)+'</div>'+
-      '<p style="font-size:11px;color:var(--t3);margin-top:2px">'+s.plan+' · '+fmt(s.price)+' ₪/ח׳ · שימוש '+s.usage+'%</p>'+
-      '<div class="meter" style="margin-top:5px;height:4px"><div class="mf" style="width:'+s.usage+'%;background:'+(s.usage<20?'#EF4444':s.usage<50?'#F59E0B':'#10B981')+'"></div></div></div>'+
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" style="flex-shrink:0"><polyline points="15 18 9 12 15 6"/></svg></div>';
+    html+='<div class="sub-row" style="cursor:pointer" onclick="openSubScreen(\''+s.uid+'\')">'+subLogoHtml(svc,40)+'<div style="flex:1;text-align:right"><div style="display:flex;justify-content:space-between;flex-direction:row-reverse;align-items:center"><p style="font-size:14px;font-weight:700">'+svc.name+'</p>'+statusBadge(s)+'</div><p style="font-size:11px;color:var(--t3);margin-top:2px">'+s.plan+' · '+fmt(subMonthly(s))+' ₪/ח׳ · שימוש '+s.usage+'%</p><div class="meter" style="margin-top:5px;height:4px"><div class="mf" style="width:'+s.usage+'%;background:'+usageCol(s.usage)+'"></div></div></div><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" style="flex-shrink:0"><polyline points="15 18 9 12 15 6"/></svg></div>';
   });
-  // archived
   const arch=subs.filter(s=>s.status==='cancelled');
-  if(arch.length){ html+='<p class="lbl" style="margin:16px 0 8px;text-align:right;color:var(--t3)">בארכיון ('+arch.length+')</p>';
-    arch.forEach(s=>{ const svc=subSvc(s.cat,s.id)||{name:s.id,color:'#999',logo:'?'};
-      html+='<div class="sub-row" style="opacity:.6;cursor:pointer" onclick="openSubDetail(\''+s.uid+'\')">'+subLogoHtml(svc,34)+'<div style="flex:1;text-align:right"><p style="font-size:13px;font-weight:700">'+svc.name+'</p><p style="font-size:11px;color:var(--t3)">בוטל · '+fmt(s.price)+' ₪/ח׳</p></div><button class="sub-row-x" onclick="event.stopPropagation();restoreSub(\''+s.uid+'\')" style="background:rgba(16,185,129,.15);color:#059669;font-size:11px;width:auto;padding:0 10px">שחזר</button></div>';
-    });
-  }
-  html+='<button class="subs-fab" onclick="openSubPicker()" style="margin-top:12px">+ הוסף או ערוך מנויים</button>';
+  if(arch.length){ html+='<p class="lbl" style="margin:16px 0 8px;text-align:right;color:var(--t3)">לא פעילים ('+arch.length+')</p>'; arch.forEach(s=>{ const svc=subSvc(s.cat,s.id)||{name:s.id,color:'#999',logo:'?'}; html+='<div class="sub-row" style="opacity:.6;cursor:pointer" onclick="openSubScreen(\''+s.uid+'\')">'+subLogoHtml(svc,34)+'<div style="flex:1;text-align:right"><p style="font-size:13px;font-weight:700">'+svc.name+'</p><p style="font-size:11px;color:var(--t3)">לא פעיל · '+fmt(subMonthly(s))+' ₪/ח׳</p></div></div>'; }); }
+  html+='<button class="subs-fab" onclick="openSubWizard()" style="margin-top:12px">+ הוסף או ערוך מנויים</button>';
   c.innerHTML=html;
 }
 
-/* ─── picker ─── */
-function openSubPicker(){ renderSubPicker(); document.getElementById('sub-picker').classList.add('show'); }
-function closeSubPicker(){ document.getElementById('sub-picker').classList.remove('show'); renderSubs(); }
-function renderSubPicker(){
-  const body=document.getElementById('sub-picker-body');
-  body.innerHTML=Object.keys(SUB_CATALOG).map(cat=>{ const g=SUB_CATALOG[cat];
-    return '<div class="sub-cat-ttl">'+g.ttl+'</div><div class="sub-bubbles">'+
-      g.services.map(svc=>{ const on=subs.some(s=>s.id===svc.id&&s.status!=='cancelled'); const p=svc.plans[0];
-        return '<button class="sub-bub'+(on?' sel':'')+'" onclick="toggleSub(\''+cat+'\',\''+svc.id+'\')">'+subLogoHtml(svc,46)+
-          '<span class="sub-bub-name">'+svc.name+'</span><span class="sub-bub-price">'+fmt(p[1])+' ₪</span></button>';
-      }).join('')+'</div>';
-  }).join('');
+/* ─── full-screen WIZARD (Dreams style) ─── */
+const SW={mode:'add',phase:'select',picks:[],queue:[],idx:0,draft:null};
+function openSubWizard(){ SW.mode='add'; SW.phase='select'; SW.picks=subsActive().map(s=>({cat:s.cat,id:s.id})); SW.queue=[]; SW.idx=0; SW.draft=null; document.getElementById('sw-fly').innerHTML=FLY_SVG; document.getElementById('sub-wizard').classList.add('show'); swRender(); }
+function closeSubWiz(){ document.getElementById('sub-wizard').classList.remove('show'); renderSubs(); }
+function swFly(t){ const b=document.getElementById('sw-bubble'),x=document.getElementById('sw-bubble-txt'); x.innerHTML=t; b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse'); }
+function swProg(p){ document.getElementById('sw-prog').style.width=p+'%'; }
+function swPicked(id){ return SW.picks.some(p=>p.id===id); }
+function swSelectToggle(cat,id){ const i=SW.picks.findIndex(p=>p.id===id); if(i>=0) SW.picks.splice(i,1); else SW.picks.push({cat,id}); document.querySelectorAll('#sw-body .sub-bub').forEach(b=>{ if(b.getAttribute('data-id')===id) b.classList.toggle('sel'); }); document.getElementById('sw-next').disabled=SW.picks.length===0; document.getElementById('sw-next').textContent=SW.picks.length?('המשך ('+SW.picks.length+')'):'בחר מנוי'; }
+function swRender(){
+  const body=document.getElementById('sw-body'); const back=document.getElementById('sw-back'); const nx=document.getElementById('sw-next');
+  if(SW.phase==='select'){
+    swProg(15); back.style.visibility='hidden';
+    swFly('סמן את כל המנויים שיש לך — אחר כך נגדיר כל אחד יחד 🪙');
+    body.innerHTML='<div class="gw-step"><h2 class="gw-h">אילו מנויים יש לך?</h2><p class="gw-sub">לחץ על הבועות — אפשר לבחור כמה שרוצים</p>'+
+      Object.keys(SUB_CATALOG).map(cat=>{ const g=SUB_CATALOG[cat]; return '<div class="sub-cat-ttl">'+g.ttl+'</div><div class="sub-bubbles">'+g.services.map(svc=>'<button class="sub-bub'+(swPicked(svc.id)?' sel':'')+'" data-id="'+svc.id+'" onclick="swSelectToggle(\''+cat+'\',\''+svc.id+'\')">'+subLogoHtml(svc,48)+'<span class="sub-bub-name">'+svc.name+'</span></button>').join('')+'</div>'; }).join('')+'</div>';
+    nx.disabled=SW.picks.length===0; nx.textContent=SW.picks.length?('המשך ('+SW.picks.length+')'):'בחר מנוי';
+    return;
+  }
+  if(SW.phase==='config'){
+    back.style.visibility=SW.idx>0?'visible':'hidden';
+    const item=SW.queue[SW.idx]; const svc=subSvc(item.cat,item.id);
+    swProg(Math.round(20+((SW.idx+1)/(SW.queue.length+1))*75));
+    swFly('<strong>'+svc.name+'</strong> — איזו חבילה יש לך?');
+    const d=SW.draft;
+    body.innerHTML='<div class="gw-step"><div style="display:flex;align-items:center;gap:12px;flex-direction:row-reverse;margin-bottom:6px">'+subLogoHtml(svc,46)+'<div style="text-align:right"><h2 class="gw-h" style="font-size:21px">'+svc.name+'</h2><p style="font-size:12px;color:var(--t3)">מנוי '+(SW.idx+1)+' מתוך '+SW.queue.length+'</p></div></div>'+
+      '<p class="gw-lbl">בחר חבילה</p><div class="gw-chips" id="sw-plans">'+svc.plans.map(p=>'<button class="gw-chip'+(d.plan===p[0]?' sel':'')+'" onclick="swSetPlan(\''+p[0]+'\','+p[1]+')">'+p[0]+' · '+fmt(p[1])+'₪</button>').join('')+'<button class="gw-chip'+(d.plan==='לא יודע'?' sel':'')+'" onclick="swSetPlan(\'לא יודע\','+svc.plans[0][1]+')">🤷 לא יודע</button></div>'+
+      '<p class="gw-lbl">מחיר (₪)</p><input class="gw-input" id="sw-price" type="number" inputmode="numeric" value="'+d.price+'" oninput="SW.draft.price=+this.value||0">'+
+      '<p class="gw-lbl">תדירות חיוב</p><div class="gw-chips"><button class="gw-chip'+(d.freq==='monthly'?' sel':'')+'" onclick="swSetFreq(\'monthly\')">חודשי</button><button class="gw-chip'+(d.freq==='yearly'?' sel':'')+'" onclick="swSetFreq(\'yearly\')">שנתי</button></div>'+
+      '<p class="gw-lbl">תאריך חיוב (יום בחודש)</p><input class="gw-input" id="sw-bday" type="number" min="1" max="28" value="'+d.billingDay+'" oninput="SW.draft.billingDay=Math.max(1,Math.min(28,+this.value||1))">'+
+      '<p class="gw-lbl">אמצעי תשלום</p><div class="gw-chips">'+Object.keys(PAY_METHODS).map(k=>'<button class="gw-chip'+(d.payment===k?' sel':'')+'" onclick="swSetPay(\''+k+'\')">'+PAY_METHODS[k]+'</button>').join('')+'</div>'+
+      '<div class="sub-row" style="margin-top:14px;cursor:pointer;background:var(--w)" onclick="swToggleShared()"><span style="font-size:20px">👥</span><div style="flex:1;text-align:right"><p style="font-size:13px;font-weight:700">מנוי משותף</p><p style="font-size:11px;color:var(--t3)" id="sw-shared-sub">'+(d.shared?(d.users+' משתמשים'):'לא משותף')+'</p></div><div style="position:relative;width:42px;height:24px;background:'+(d.shared?'var(--purple)':'var(--border)')+';border-radius:99px" id="sw-shared-sw"><div style="position:absolute;top:2px;'+(d.shared?'left:2px':'right:2px')+';width:20px;height:20px;background:#fff;border-radius:50%"></div></div></div>'+
+      '<p class="gw-lbl">הערות (אופציונלי)</p><input class="gw-input" id="sw-notes" style="font-size:14px;text-align:start" placeholder="למשל: משותף עם אח" value="'+(d.notes||'')+'" oninput="SW.draft.notes=this.value"></div>';
+    nx.disabled=false; nx.textContent = SW.idx<SW.queue.length-1 ? 'אישור — המנוי הבא ←' : 'אישור וסיום ✓';
+    return;
+  }
 }
-function toggleSub(cat,id){
-  const ex=subs.find(s=>s.id===id&&s.status!=='cancelled');
-  if(ex){ subs=subs.filter(s=>s!==ex); }
-  else { const arch=subs.find(s=>s.id===id&&s.status==='cancelled'); if(arch){ arch.status='active'; } else { subs.push(newSub(cat,id)); } }
-  saveSubsLS(); renderSubPicker();
+function swSetPlan(plan,price){ SW.draft.plan=plan; SW.draft.price=price; const pe=document.getElementById('sw-price'); if(pe) pe.value=price; document.querySelectorAll('#sw-plans .gw-chip').forEach(b=>b.classList.remove('sel')); if(event&&event.currentTarget) event.currentTarget.classList.add('sel'); }
+function swSetFreq(f){ SW.draft.freq=f; swRenderChips(); }
+function swSetPay(p){ SW.draft.payment=p; swRenderChips(); }
+function swToggleShared(){ SW.draft.shared=!SW.draft.shared; SW.draft.users=SW.draft.shared?2:1; swRenderChips(); }
+function swRenderChips(){ // light re-render of config to reflect toggles
+  const cur=SW.idx, ph=SW.phase; if(ph==='config') swRender(); }
+function swNext(){
+  if(SW.phase==='select'){
+    if(!SW.picks.length) return;
+    // archive active subs that were unpicked
+    subs.forEach(s=>{ if(s.status!=='cancelled' && !SW.picks.some(p=>p.id===s.id)) s.status='cancelled'; });
+    // queue = picks that have no active sub yet
+    SW.queue=SW.picks.filter(p=>!subs.some(s=>s.id===p.id&&s.status!=='cancelled'));
+    // reactivate any archived that were re-picked
+    SW.picks.forEach(p=>{ const a=subs.find(s=>s.id===p.id&&s.status==='cancelled'); if(a){ a.status='active'; } });
+    saveSubsLS();
+    if(!SW.queue.length){ swFinish(); return; }
+    SW.phase='config'; SW.idx=0; SW.draft=newSubBase(SW.queue[0].cat,SW.queue[0].id); swRender(); return;
+  }
+  if(SW.phase==='config'){
+    subs.push(Object.assign({},SW.draft)); saveSubsLS();
+    if(SW.idx<SW.queue.length-1){ SW.idx++; SW.draft=newSubBase(SW.queue[SW.idx].cat,SW.queue[SW.idx].id); swRender(); }
+    else swFinish();
+  }
 }
+function swBack(){ if(SW.phase==='config'&&SW.idx>0){ subs.pop(); SW.idx--; SW.draft=newSubBase(SW.queue[SW.idx].cat,SW.queue[SW.idx].id); saveSubsLS(); swRender(); } else if(SW.phase==='config'){ SW.phase='select'; swRender(); } }
+function swFinish(){ document.getElementById('sub-wizard').classList.remove('show'); renderSubs(); showToast({icon:'🪙',title:'המנויים נשמרו',sub:subsActive().length+' מנויים · '+fmt(subsTotalMonthly())+' ₪/ח׳',col:'var(--purple)'}); }
 
-/* ─── detail card ─── */
-let detailUid=null;
-function openSubDetail(uid){ detailUid=uid; renderSubDetail(); document.getElementById('sub-detail').classList.add('show'); }
-function closeSubDetail(){ document.getElementById('sub-detail').classList.remove('show'); renderSubs(); }
+/* ─── full-screen DETAIL with prev/next ─── */
+let screenUid=null;
+function openSubScreen(uid){ screenUid=uid; const el=document.getElementById('sub-screen'); el.classList.add('show'); if(!el._swipe){ el._swipe=1; let x0=null; el.addEventListener('touchstart',e=>{x0=e.changedTouches[0].clientX;},{passive:true}); el.addEventListener('touchend',e=>{ if(x0===null)return; const dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>60){ const rtl=(document.documentElement.dir!=='ltr'); subScreenNav(dx>0?(rtl?-1:1):(rtl?1:-1)); } x0=null; },{passive:true}); } renderSubScreen(); }
+function closeSubScreen(){ document.getElementById('sub-screen').classList.remove('show'); renderSubs(); }
 function getSub(uid){ return subs.find(s=>s.uid===uid); }
-function billingHistory(s){
-  const out=[]; const [y,m]=s.startMonth.split('-').map(Number); let d=new Date(y,m-1,1); const now=new Date();
-  while(d<=now && out.length<8){ out.push({m:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), amt:s.price}); d.setMonth(d.getMonth()+1); }
-  return out.reverse();
+function subScreenNav(dir){ const list=subsActive(); const i=list.findIndex(s=>s.uid===screenUid); if(i<0) return; let n=i+dir; if(n<0)n=list.length-1; if(n>=list.length)n=0; screenUid=list[n].uid; renderSubScreen(true); }
+function renderSubScreen(anim){
+  const s=getSub(screenUid); if(!s){ closeSubScreen(); return; } const svc=subSvc(s.cat,s.id)||{name:s.id,color:'#999',logo:'?',plans:[[s.plan,s.price]]};
+  const mo=subMonthly(s),yr=mo*12,hist=billingHistory(s),dys=nextBillingDays(s);
+  const list=subsActive(); const pos=list.findIndex(x=>x.uid===s.uid);
+  const body=document.getElementById('sub-screen-body');
+  let ins=[]; if(s.usage<20) ins.push('💤 כמעט לא בשימוש — שווה לשקול ביטול ('+fmt(yr)+' ₪/שנה)'); if(dys<=5) ins.push('⏰ מתחדש בעוד '+(dys===0?'היום':dys+' ימים')); if(s.priceChanged) ins.push('📈 המחיר עלה מאז שנרשמת'); if(s.usage>=70) ins.push('✅ מנוצל היטב — '+Math.round(mo/(s.usage*0.4*1))+' ₪ לשעת שימוש בערך');
+  body.innerHTML=(anim?'<div class="gw-step">':'<div>')+
+    '<div style="height:120px;border-radius:22px;background:'+svc.color+';display:flex;align-items:center;justify-content:center;margin-bottom:14px;position:relative"><div style="font-size:44px;font-weight:900;color:#fff;opacity:.95">'+svc.logo+'</div><div style="position:absolute;bottom:10px;right:14px">'+statusBadge(s)+'</div></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;flex-direction:row-reverse;margin-bottom:14px"><div style="text-align:right"><h2 style="font-size:23px;font-weight:900">'+svc.name+'</h2><p style="font-size:13px;color:var(--t3)">'+s.plan+' · '+(s.freq==='yearly'?'חיוב שנתי':'חיוב חודשי')+'</p></div><span style="font-size:12px;color:var(--t3)">'+(pos+1)+' / '+list.length+'</span></div>'+
+    '<div class="gcalc-grid"><div class="gcalc"><div class="gcalc-lbl">עלות חודשית</div><div class="gcalc-val purple">'+fmt(mo)+' ₪</div></div><div class="gcalc"><div class="gcalc-lbl">עלות שנתית</div><div class="gcalc-val">'+fmt(yr)+' ₪</div></div><div class="gcalc"><div class="gcalc-lbl">חיוב הבא</div><div class="gcalc-val" style="font-size:15px">בעוד '+(dys===0?'היום':dys+' ימים')+'</div></div><div class="gcalc"><div class="gcalc-lbl">התחלה</div><div class="gcalc-val" style="font-size:15px">'+fmtMonth(s.startMonth)+'</div></div></div>'+
+    '<div class="card" style="padding:14px;margin:12px 0"><div style="display:flex;justify-content:space-between;flex-direction:row-reverse;margin-bottom:6px"><span style="font-size:17px;font-weight:900;color:'+usageCol(s.usage)+'">'+s.usage+'%</span><p style="font-size:13px;font-weight:700">שימוש בפועל</p></div><div class="meter"><div class="mf" style="width:'+s.usage+'%;background:'+usageCol(s.usage)+'"></div></div><p style="font-size:11px;color:var(--t3);text-align:right;margin-top:6px">≈ '+Math.round(s.usage*0.4)+' שעות בחודש · לפי הערכת זמן-מסך*</p></div>'+
+    (ins.length?'<div class="airec-card" style="margin-bottom:12px"><div class="airec-ic">🤖</div><div style="flex:1"><p style="font-size:12px;font-weight:800;color:var(--purple);margin-bottom:4px">תובנות AI</p>'+ins.map(t=>'<p style="font-size:12.5px;line-height:1.6;color:var(--t1)">'+t+'</p>').join('')+'</div></div>':'')+
+    '<p class="gw-lbl" style="margin:6px 2px 8px">היסטוריית חיובים</p><div class="card" style="padding:6px 14px;margin-bottom:14px">'+hist.map((h,i)=>'<div style="display:flex;justify-content:space-between;flex-direction:row-reverse;padding:9px 0'+(i<hist.length-1?';border-bottom:1px solid var(--border)':'')+'"><span style="font-size:13px;font-weight:700">'+fmt(h.amt)+' ₪</span><span style="font-size:12px;color:var(--t3)">'+fmtMonth(h.m)+'</span></div>').join('')+'</div>'+
+    '<div style="display:flex;gap:10px"><button onclick="editSub(\''+s.uid+'\')" style="flex:1;background:var(--s2);color:var(--purple);border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer">✏️ עריכה</button>'+
+      (s.status==='cancelled'?'<button onclick="restoreSub(\''+s.uid+'\')" style="flex:1;background:rgba(16,185,129,.14);color:#059669;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer">↩️ הפעל מחדש</button>':'<button onclick="archiveSub(\''+s.uid+'\')" style="flex:1;background:rgba(244,114,182,.12);color:#BE185D;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer">סמן כבוטל</button>')+
+    '</div></div>';
 }
-function renderSubDetail(){
-  const s=getSub(detailUid); if(!s) return; const svc=subSvc(s.cat,s.id)||{name:s.id,color:'#999',logo:'?',plans:[[s.plan,s.price]]};
-  const yr=s.price*12; const hist=billingHistory(s);
-  const statusChips=['active','renewing','trial','paused'].map(st=>'<button class="gw-chip'+(s.status===st?' sel':'')+'" style="padding:8px 13px;font-size:12.5px" onclick="subSetStatus(\''+st+'\')">'+SUB_STATUS[st].lbl+'</button>').join('');
-  const planChips=svc.plans.map(p=>'<button class="gw-chip'+(s.plan===p[0]?' sel':'')+'" style="padding:8px 13px;font-size:12.5px" onclick="subSetPlan(\''+p[0]+'\','+p[1]+')">'+p[0]+' · '+fmt(p[1])+'₪</button>').join('');
-  document.getElementById('sub-detail-body').innerHTML=
-    '<div style="display:flex;align-items:center;gap:12px;flex-direction:row-reverse;margin-bottom:14px">'+subLogoHtml(svc,52)+
-      '<div style="flex:1;text-align:right"><p style="font-size:19px;font-weight:900">'+svc.name+'</p><div style="margin-top:3px">'+statusBadge(s)+(s.priceChanged?' <span style="font-size:10px;font-weight:800;color:#BE185D;background:rgba(236,72,153,.12);border-radius:99px;padding:2px 8px">מחיר עלה 📈</span>':'')+'</div></div></div>'+
-    // usage
-    '<div class="card" style="padding:14px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;flex-direction:row-reverse;margin-bottom:6px"><span style="font-size:17px;font-weight:900;color:'+(s.usage<20?'#EF4444':s.usage<50?'#F59E0B':'#10B981')+'">'+s.usage+'%</span><p style="font-size:13px;font-weight:700">שימוש בפועל</p></div><div class="meter"><div class="mf" style="width:'+s.usage+'%;background:'+(s.usage<20?'#EF4444':s.usage<50?'#F59E0B':'#10B981')+'"></div></div><p style="font-size:11px;color:var(--t3);text-align:right;margin-top:6px">≈ '+Math.round(s.usage*0.4)+' שעות בחודש · '+(s.usage<20?'כמעט שלא בשימוש':s.usage<50?'שימוש בינוני':'בשימוש קבוע')+'</p><p style="font-size:10px;color:var(--t4);text-align:right;margin-top:3px">* מבוסס הערכת זמן-מסך</p></div>'+
-    // plan
-    '<p class="gw-lbl" style="margin:6px 2px 8px">איזו חבילה?</p><div class="gw-chips">'+planChips+'</div>'+
-    // info grid
-    '<div class="gcalc-grid" style="margin-top:14px">'+
-      '<div class="gcalc"><div class="gcalc-lbl">עלות חודשית</div><div class="gcalc-val purple">'+fmt(s.price)+' ₪</div></div>'+
-      '<div class="gcalc"><div class="gcalc-lbl">עלות שנתית</div><div class="gcalc-val">'+fmt(yr)+' ₪</div></div>'+
-      '<div class="gcalc"><div class="gcalc-lbl">תאריך חיוב</div><div class="gcalc-val">'+s.billingDay+' לחודש</div></div>'+
-      '<div class="gcalc"><div class="gcalc-lbl">התחלה</div><div class="gcalc-val" style="font-size:15px">'+fmtMonth(s.startMonth)+'</div></div>'+
-    '</div>'+
-    // payment + shared
-    '<p class="gw-lbl" style="margin:14px 2px 8px">אמצעי תשלום</p><div class="gw-chips">'+Object.keys(PAY_METHODS).map(k=>'<button class="gw-chip'+(s.payment===k?' sel':'')+'" style="padding:8px 12px;font-size:12.5px" onclick="subSetField(\'payment\',\''+k+'\')">'+PAY_METHODS[k]+'</button>').join('')+'</div>'+
-    '<div class="sub-row" style="margin-top:14px;cursor:pointer" onclick="subToggleShared()"><span style="font-size:20px">👥</span><div style="flex:1;text-align:right"><p style="font-size:13px;font-weight:700">מנוי משותף</p><p style="font-size:11px;color:var(--t3)">'+(s.shared?(s.users+' משתמשים · '+fmt(Math.round(s.price/s.users))+' ₪ לך'):'לא משותף')+'</p></div><div class="toggle-sw" style="position:relative;width:42px;height:24px;background:'+(s.shared?'var(--purple)':'var(--border)')+';border-radius:99px"><div style="position:absolute;top:2px;'+(s.shared?'left:2px':'right:2px')+';width:20px;height:20px;background:#fff;border-radius:50%;transition:all .2s"></div></div></div>'+
-    // billing history
-    '<p class="gw-lbl" style="margin:16px 2px 8px">היסטוריית חיובים</p><div class="card" style="padding:6px 14px">'+hist.map((h,i)=>'<div style="display:flex;justify-content:space-between;flex-direction:row-reverse;padding:9px 0'+(i<hist.length-1?';border-bottom:1px solid var(--border)':'')+'"><span style="font-size:13px;font-weight:700">'+fmt(h.amt)+' ₪</span><span style="font-size:12px;color:var(--t3)">'+fmtMonth(h.m)+'</span></div>').join('')+'</div>'+
-    // status
-    '<p class="gw-lbl" style="margin:16px 2px 8px">סטטוס</p><div class="gw-chips">'+statusChips+'</div>'+
-    // archive / restore
-    (s.status==='cancelled'
-      ? '<button class="subs-fab" style="background:linear-gradient(135deg,#10B981,#059669);margin-top:18px" onclick="restoreSub(\''+s.uid+'\')">שחזר מנוי</button>'
-      : '<button onclick="archiveSub(\''+s.uid+'\')" style="width:100%;background:rgba(244,114,182,.12);color:#BE185D;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:18px">בטל מנוי (לארכיון)</button>');
-}
-function subSetStatus(st){ const s=getSub(detailUid); if(s){ s.status=st; saveSubsLS(); renderSubDetail(); } }
-function subSetPlan(plan,price){ const s=getSub(detailUid); if(s){ s.plan=plan; s.price=price; saveSubsLS(); renderSubDetail(); } }
-function subSetField(f,v){ const s=getSub(detailUid); if(s){ s[f]=v; saveSubsLS(); renderSubDetail(); } }
-function subToggleShared(){ const s=getSub(detailUid); if(s){ s.shared=!s.shared; s.users=s.shared?2:1; saveSubsLS(); renderSubDetail(); } }
-function archiveSub(uid){ const s=getSub(uid); if(s){ s.status='cancelled'; saveSubsLS(); closeSubDetail(); showToast({icon:'📦',title:'הועבר לארכיון',sub:(subSvc(s.cat,s.id)||{}).name||'',col:'var(--t3)'}); } }
-function restoreSub(uid){ const s=getSub(uid); if(s){ s.status='active'; saveSubsLS(); if(document.getElementById('sub-detail').classList.contains('show')) renderSubDetail(); else renderSubs(); } }
+function editSub(uid){ const s=getSub(uid); if(!s) return; closeSubScreen(); SW.mode='edit'; SW.phase='config'; SW.queue=[{cat:s.cat,id:s.id}]; SW.idx=0; SW.draft=Object.assign({},s); document.getElementById('sw-fly').innerHTML=FLY_SVG; document.getElementById('sub-wizard').classList.add('show'); // override save to update existing
+  SW._editUid=uid; swRender(); }
+function archiveSub(uid){ const s=getSub(uid); if(s){ s.status='cancelled'; saveSubsLS(); renderSubScreen(); showToast({icon:'📦',title:'סומן כבוטל',sub:(subSvc(s.cat,s.id)||{}).name||'',col:'var(--t3)'}); } }
+function restoreSub(uid){ const s=getSub(uid); if(s){ s.status='active'; saveSubsLS(); if(document.getElementById('sub-screen').classList.contains('show')) renderSubScreen(); else renderSubs(); } }
 
-/* ─── history screen ─── */
+/* edit-mode finish override */
+const _swNextOrig=swNext;
+swNext=function(){ if(SW.mode==='edit'&&SW.phase==='config'){ const t=getSub(SW._editUid); if(t) Object.assign(t,SW.draft,{uid:t.uid}); saveSubsLS(); SW.mode='add'; document.getElementById('sub-wizard').classList.remove('show'); renderSubs(); showToast({icon:'✏️',title:'המנוי עודכן',sub:SW.draft.plan+' · '+fmt(subMonthly(SW.draft))+' ₪',col:'var(--purple)'}); return; } _swNextOrig(); };
+
+/* ─── history ─── */
 function openSubHistory(){ renderSubHistory(); document.getElementById('sub-history').classList.add('show'); }
 function closeSubHistory(){ document.getElementById('sub-history').classList.remove('show'); }
-function renderSubHistory(){
-  const body=document.getElementById('sub-history-body');
-  if(!subs.length){ body.innerHTML='<p style="text-align:center;color:var(--t3);padding:30px">אין עדיין היסטוריה</p>'; return; }
-  body.innerHTML=subs.map(s=>{ const svc=subSvc(s.cat,s.id)||{name:s.id,color:'#999',logo:'?'};
-    const period=fmtMonth(s.startMonth)+' – '+(s.status==='cancelled'?'בוטל':'כיום');
-    return '<div class="sub-row">'+subLogoHtml(svc,36)+'<div style="flex:1;text-align:right"><p style="font-size:14px;font-weight:700">'+svc.name+'</p><p style="font-size:11px;color:var(--t3)">'+period+' · '+fmt(s.price*12)+' ₪/שנה</p></div>'+statusBadge(s)+'</div>';
-  }).join('');
-}
+function renderSubHistory(){ const body=document.getElementById('sub-history-body'); if(!subs.length){ body.innerHTML='<p style="text-align:center;color:var(--t3);padding:30px">אין עדיין היסטוריה</p>'; return; } body.innerHTML=subs.map(s=>{ const svc=subSvc(s.cat,s.id)||{name:s.id,color:'#999',logo:'?'}; const period=fmtMonth(s.startMonth)+' – '+(s.status==='cancelled'?'בוטל':'כיום'); return '<div class="sub-row">'+subLogoHtml(svc,36)+'<div style="flex:1;text-align:right"><p style="font-size:14px;font-weight:700">'+svc.name+'</p><p style="font-size:11px;color:var(--t3)">'+period+' · '+fmt(subMonthly(s)*12)+' ₪/שנה</p></div>'+statusBadge(s)+'</div>'; }).join(''); }
 
 </script>
 </body>
